@@ -181,14 +181,27 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-    if(accumulator === undefined){
-      accumulator = collection[0]
-      for(let i = 1; i < collection.length; i++){
-        accumulator = iterator(accumulator, collection[i]);
+    if(Array.isArray(collection)){
+      if(accumulator === undefined){
+        accumulator = collection[0]
+        for(let i = 1; i < collection.length; i++){
+          accumulator = iterator(accumulator, collection[i]);
+        }
+      }else{
+        for(let i = 0; i < collection.length; i++){
+          accumulator = iterator(accumulator, collection[i]);
+        }
       }
     }else{
-      for(let i = 0; i < collection.length; i++){
-        accumulator = iterator(accumulator, collection[i]);
+      if(accumulator === undefined){
+        accumulator = Object.keys(obj)[0];
+        for(let key in collection){
+          accumulator = iterator(accumulator, collection[key]);
+        }
+      }else{
+        for(let key in collection){
+          accumulator = iterator(accumulator, collection[key]);
+        }
       }
     }
     return accumulator;
@@ -209,6 +222,15 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
+    if(iterator === undefined){
+      return _.reduce(collection, function(match, item){
+        return (match && Boolean(item));
+      })
+    }else{
+      return _.reduce(collection, function(match, item){
+        return (match && Boolean(iterator(item)));
+      }, true);
+    }
     // TIP: Try re-using reduce() here.
   };
 
