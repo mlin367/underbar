@@ -185,22 +185,24 @@
       if(accumulator === undefined){
         accumulator = collection[0]
         for(let i = 1; i < collection.length; i++){
-          accumulator = iterator(accumulator, collection[i]);
+          accumulator = iterator(accumulator, collection[i], i, collection);
         }
       }else{
         for(let i = 0; i < collection.length; i++){
-          accumulator = iterator(accumulator, collection[i]);
+          accumulator = iterator(accumulator, collection[i], i, collection);
         }
       }
     }else{
       if(accumulator === undefined){
-        accumulator = Object.keys(obj)[0];
+        accumulator = Object.keys(collection)[0];
         for(let key in collection){
-          accumulator = iterator(accumulator, collection[key]);
+          if(!(key === Object.keys(collection)[0])){
+            accumulator = iterator(accumulator, collection[key], key, collection);
+          }
         }
       }else{
         for(let key in collection){
-          accumulator = iterator(accumulator, collection[key]);
+          accumulator = iterator(accumulator, collection[key], key, collection);
         }
       }
     }
@@ -225,7 +227,7 @@
     if(iterator === undefined){
       return _.reduce(collection, function(match, item){
         return (match && Boolean(item));
-      })
+      }, true);
     }else{
       return _.reduce(collection, function(match, item){
         return (match && Boolean(iterator(item)));
@@ -238,6 +240,15 @@
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if(iterator === undefined){
+      return _.reduce(collection, function(match, item){
+        return (match || Boolean(item));
+      }, false);
+    }else{
+      return _.reduce(collection, function(match, item){
+        return (match || Boolean(iterator(item)));
+      }, false);
+    }
   };
 
 
@@ -259,12 +270,28 @@
   //   }, {
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
-  _.extend = function(obj) {
+  _.extend = function(obj, source) {
+    for(let i = 1; i < arguments.length; i++){
+      obj = _.reduce(arguments[i], function(object, value, key){
+        object[key] = value;
+        return object;
+      }, obj);
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
-  _.defaults = function(obj) {
+  _.defaults = function(obj, source) {
+    for(let i = 1; i < arguments.length; i++){
+      obj = _.reduce(arguments[i], function(object, value, key){
+        if(!(key in object)){
+          object[key] = value;
+        }
+        return object;
+      }, obj);
+    }
+    return obj;
   };
 
 
